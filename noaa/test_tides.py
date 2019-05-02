@@ -13,7 +13,7 @@ class TestNoaaRequest:
             .interval(tides.Interval.HILO)\
             .begin_date(datetime.datetime.fromisoformat('2019-05-01'))\
             .end_date(datetime.datetime.fromisoformat('2019-05-02'))\
-            .units('english')\
+            .units(tides.Unit.ENGLISH)\
             .datum(tides.Datum.MEAN_LOWER_LOW_WATER)\
             .timezone(tides.TimeZone.GMT)
         query = parse.parse_qs(parse.urlparse(str(req)).query)
@@ -32,7 +32,7 @@ class TestNoaaRequest:
             .product(tides.Product.PREDICTIONS)\
             .begin_date(datetime.datetime.fromisoformat('2019-05-01'))\
             .end_date(datetime.datetime.fromisoformat('2019-05-02'))\
-            .units('english')\
+            .units(tides.Unit.ENGLISH)\
             .datum(tides.Datum.MEAN_LOWER_LOW_WATER)\
             .timezone(tides.TimeZone.GMT)
         query = parse.parse_qs(parse.urlparse(str(req)).query)
@@ -52,10 +52,21 @@ class TestNoaaRequest:
             .interval(tides.Interval.HILO)\
             .begin_date(datetime.datetime.fromisoformat('2019-05-01'))\
             .end_date(datetime.datetime.fromisoformat('2019-05-02'))\
-            .units('english')\
+            .units(tides.Unit.ENGLISH)\
             .datum(tides.Datum.MEAN_LOWER_LOW_WATER)
         assert not req._ready()
         req.timezone(tides.TimeZone.GMT)
+        assert req._ready()
+
+        req = tides.NoaaRequest() \
+            .station(8720211) \
+            .product(tides.Product.PREDICTIONS) \
+            .interval(tides.Interval.HILO) \
+            .begin_date(datetime.datetime.fromisoformat('2019-05-01')) \
+            .range(30) \
+            .units(tides.Unit.ENGLISH) \
+            .datum(tides.Datum.MEAN_LOWER_LOW_WATER)\
+            .timezone(tides.TimeZone.GMT)
         assert req._ready()
 
 

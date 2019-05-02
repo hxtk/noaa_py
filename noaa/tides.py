@@ -27,6 +27,11 @@ class Interval(enum.Enum):
 
 
 class Datum(enum.Enum):
+    """Enumeration of NOAA water level data available to this API.
+
+    A complete listing of valid data is available at the link below:
+        https://tidesandcurrents.noaa.gov/api/#datum
+    """
     COLUMBIA_RIVER = 'CRD'
     GREAT_LAKES = 'IGLD'
     GREAT_LAKES_LOW_WATER = 'LWD'
@@ -41,6 +46,11 @@ class Datum(enum.Enum):
 
 
 class Product(enum.Enum):
+    """Enumeration of NOAA Products available to the Tides and Currents API.
+
+    Full documentation is available at the link below:
+        https://tidesandcurrents.noaa.gov/api/#products
+    """
     WATER_LEVEL = 'water_level'
     AIR_TEMP = 'air_temperature'
     WATER_TEMP = 'water_temp'
@@ -61,6 +71,16 @@ class Product(enum.Enum):
     CURRENTS = 'currents'
 
 
+class Unit(enum.Enum):
+    """Enumeration of the unit systems available to this API.
+
+    ENGLISH will return data in feet, knots, and degrees fahrenheit.
+    METRIC will return dat in meters, cm/s, and degrees celsius.
+    """
+    ENGLISH = 'english'
+    METRIC = 'metric'
+
+
 class NoaaResult(object):
     pass
 
@@ -73,7 +93,7 @@ class NoaaRequest(object):
         self.time_range = NoaaTimeRange()
         self.noaa_product: Product = None
         self.noaa_datum: Datum = None
-        self.unit_system: str = None
+        self.unit_system: Unit = None
         self.station_id: int = None
         self.interval_: Optional[Interval] = None
         self.timezone_: TimeZone = None
@@ -95,7 +115,7 @@ class NoaaRequest(object):
         data = requests.get(str(self)).json()
         if 'error' in data:
             print(data['error'])
-            raise ApiError(data['error'])
+            raise ApiError(data['error']['message'])
 
         return NoaaResult(data['predictions'])
 
@@ -150,20 +170,19 @@ class NoaaRequest(object):
             The NoaaRequest object it is called on, for chaining.
 
         """
-        self.time_range.range = hours
+        self.time_range.hours = hours
         return self
 
     def product(self, product: Product) -> 'NoaaRequest':
         """Sets the NOAA product to be queried.
-
-        A complete listing of valid products can be found here:
-            https://tidesandcurrents.noaa.gov/api/#products
 
         Args:
             product: the string specifying the product to be used.
 
         Returns:
             The NoaaRequest object it is called on, for chaining.
+
+        See Also: NoaaProduct
         """
         if isinstance(product, Product):
             self.noaa_product = product
@@ -174,11 +193,8 @@ class NoaaRequest(object):
     def datum(self, datum: Datum) -> 'NoaaRequest':
         """Specify NOAA Datum.
 
-        This is an optional argument required if the specified product is a
+        This is a required argument required if the specified product is a
         water level product.
-
-        A complete listing of valid data is available at the link below:
-            https://tidesandcurrents.noaa.gov/api/#datum
 
         Args:
             datum: The NOAA datum to be requested.
@@ -189,7 +205,7 @@ class NoaaRequest(object):
         self.noaa_datum = datum
         return self
 
-    def units(self, units: str) -> 'NoaaRequest':
+    def units(self, units: Unit) -> 'NoaaRequest':
         """Specify the unit system to be used.
 
         One may use 'english' or 'metric' to specify either of those two unit
@@ -258,7 +274,7 @@ class NoaaRequest(object):
             str(self.time_range),
             'product=' + self.noaa_product.value,
             'datum=' + self.noaa_datum.value,
-            'units=' + self.unit_system,
+            'units=' + self.unit_system.value,
             'time_zone=' + self.timezone_.value,
             'interval=' + interval,
             'station=' + str(self.station_id),
@@ -300,6 +316,12 @@ class NoaaRequest(object):
 
 
 class NoaaDate(enum.Enum):
+    """Magic number time range specifiers.
+
+    TODAY refers to the 24-hour period beginning at the most recent midnight.
+    LATEST refers to the latest data point available.
+    RECENT refers to the 72-hour period ending at the most recent data-point.
+    """
     TODAY = 'today'
     LATEST = 'latest'
     RECENT = 'recent'
@@ -330,7 +352,9 @@ class NoaaTimeRange:
             An end and a duration;
             A duration (this implicitly uses the current time as the end); or
             A magic word 'today', 'latest' (most recent data), or 'recent'
-                (last 72 hours).
+                (last 72 hours), represented here as a NoaaDate.
+
+        Above, duration is measured in hours.
 
         Returns:
             True if this time range is in one of the formats specified above.
