@@ -12,6 +12,6 @@ install:
 env:
   - CODECOV_TOKEN="cd055358-17dd-47cf-84cd-a378bbd4d45f"
 script:
-  - pytest
+  - pytest --cov=./
 after_success:
   - codecov
