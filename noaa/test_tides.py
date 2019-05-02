@@ -10,7 +10,7 @@ class TestNoaaRequest:
         req = tides.NoaaRequest()\
             .station(8720211)\
             .product(tides.Product.PREDICTIONS)\
-            .interval('hilo')\
+            .interval(tides.Interval.HILO)\
             .begin_date(datetime.datetime.fromisoformat('2019-05-01'))\
             .end_date(datetime.datetime.fromisoformat('2019-05-02'))\
             .units('english')\
@@ -26,11 +26,30 @@ class TestNoaaRequest:
         assert query['datum'] == ['MLLW']
         assert query['time_zone'] == ['gmt']
 
+    def test_str_no_interval(self):
+        req = tides.NoaaRequest()\
+            .station(8720211)\
+            .product(tides.Product.PREDICTIONS)\
+            .begin_date(datetime.datetime.fromisoformat('2019-05-01'))\
+            .end_date(datetime.datetime.fromisoformat('2019-05-02'))\
+            .units('english')\
+            .datum(tides.Datum.MEAN_LOWER_LOW_WATER)\
+            .timezone('gmt')
+        query = parse.parse_qs(parse.urlparse(str(req)).query)
+        assert query['product'] == ['predictions']
+        assert query['station'] == ['8720211']
+        assert query['begin_date'] == ['20190501 00:00']
+        assert query['end_date'] == ['20190502 00:00']
+        assert query['units'] == ['english']
+        assert query['datum'] == ['MLLW']
+        assert query['time_zone'] == ['gmt']
+        assert 'interval' not in query
+
     def test_ready(self):
         req = tides.NoaaRequest()\
             .station(8720211)\
             .product(tides.Product.PREDICTIONS)\
-            .interval('hilo')\
+            .interval(tides.Interval.HILO)\
             .begin_date(datetime.datetime.fromisoformat('2019-05-01'))\
             .end_date(datetime.datetime.fromisoformat('2019-05-02'))\
             .units('english')\

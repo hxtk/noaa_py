@@ -1,4 +1,4 @@
-from typing import Mapping
+from typing import Mapping, Optional
 
 import datetime
 import enum
@@ -13,6 +13,11 @@ class ApiError(Exception):
     to raise an error if something goes wrong or if something is wrong with
     the request other than its syntax.
     """
+
+
+class Interval(enum.Enum):
+    HILO = 'hilo'
+    HOUR = 'h'
 
 
 class Datum(enum.Enum):
@@ -64,7 +69,7 @@ class NoaaRequest(object):
         self.noaa_datum: Datum = None
         self.unit_system: str = None
         self.station_id: int = None
-        self.interval_: str = None
+        self.interval_: Optional[Interval] = None
         self.timezone_: str = None
 
     def execute(self) -> 'NoaaResult':
@@ -206,7 +211,7 @@ class NoaaRequest(object):
         self.station_id = station_id
         return self
 
-    def interval(self, interval: str) -> 'NoaaRequest':
+    def interval(self, interval: Interval) -> 'NoaaRequest':
         """Specify the time interval to be used.
 
         Time interval is an optional parameter. If it is not specified,
@@ -248,7 +253,7 @@ class NoaaRequest(object):
             'datum=' + self.noaa_datum.value,
             'units=' + self.unit_system,
             'time_zone=' + self.timezone_,
-            'interval=' + self.interval_,
+            'interval=' + self.interval_.value if self.interval_ else '',
             'station=' + str(self.station_id),
         ])
         return NoaaRequest.URL_FORMAT.format(args)
@@ -281,7 +286,7 @@ class NoaaRequest(object):
             res = False
         if self.timezone_ not in ['gmt', 'lst', 'lst_ldt']:
             res = False
-        if self.interval_ and self.interval_ not in ['hilo', 'h']:
+        if self.interval_ and not isinstance(self.interval_, Interval):
             res = False
 
         return res
