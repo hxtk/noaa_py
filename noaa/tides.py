@@ -29,11 +29,37 @@ class NoaaResult(object):
 
 
 class NoaaRequest(object):
+    URL_FORMAT = 'https://tidesandcurrents.noaa.gov/api/datagetter?' \
+                 '&application=noaa_py&format=json&{}'
+
     def __init__(self):
         self.time_range = NoaaTimeRange()
+        self.noaa_product: str = None
+        self.noaa_datum: str = None
+        self.unit_system: str = None
+        self.station_id: int = None
+        self.interval_: str = None
+        self.timezone_: str = None
 
     def execute(self) -> 'NoaaResult':
-        pass
+        """Executes the built request.
+
+        Returns:
+            NoaaResult containing the data returned, if successful.
+
+        Raises:
+            MalformedRequestException: if there is a syntax error with the
+                request, such as an invalid combination of instructions.
+            ApiError: if the request returns from the server with an error
+        """
+        if self._ready(True):
+            raise MalformedRequestException
+        data = requests.get(str(self)).json()
+        if 'error' in data:
+            print(data['error'])
+            raise ApiError
+
+        return NoaaResult(data['predictions'])
 
     def begin_date(self, begin: datetime.datetime) -> 'NoaaRequest':
         """Set the beginning date for the result.
@@ -49,7 +75,7 @@ class NoaaRequest(object):
             The NoaaRequest object it was called on, for chaining.
 
         """
-        self.begin = begin
+        self.time_range.begin = begin
         return self
 
     def end_date(self, end: datetime.datetime) -> 'NoaaRequest':
@@ -66,10 +92,10 @@ class NoaaRequest(object):
             The NoaaRequest object it was called on, for chaining.
 
         """
-        self.end = end
+        self.time_range.end = end
         return self
 
-    def range(self, hours: int):
+    def range(self, hours: int) -> 'NoaaRequest':
         """Set the size of the time range for the result.
 
         This may be used in conjunction with `NoaaRequest.begin_date()` or
@@ -86,8 +112,116 @@ class NoaaRequest(object):
             The NoaaRequest object it is called on, for chaining.
 
         """
-        self.hours = hours
+        self.time_range.hours = hours
         return self
+
+    def product(self, product: str) -> 'NoaaRequest':
+        """Sets the NOAA product to be queried.
+
+        A complete listing of valid products can be found here:
+            https://tidesandcurrents.noaa.gov/api/#products
+
+        Args:
+            product: the string specifying the product to be used.
+
+        Returns:
+            The NoaaRequest object it is called on, for chaining.
+        """
+        self.noaa_product = product
+        return self
+
+    def datum(self, datum: str) -> 'NoaaRequest':
+        """Specify NOAA Datum.
+
+        This is an optional argument required if the specified product is a
+        water level product.
+
+        A complete listing of valid data is available at the link below:
+            https://tidesandcurrents.noaa.gov/api/#datum
+
+        Args:
+            datum: The NOAA datum to be requested.
+
+        Returns:
+            The NoaaRequest object it is called on, for chaining.
+        """
+        self.noaa_datum = datum
+        return self
+
+    def units(self, units: str) -> 'NoaaRequest':
+        """Specify the unit system to be used.
+
+        One may use 'english' or 'metric' to specify either of those two unit
+        systems.
+
+        Args:
+            units: The name of the unit system in which the results should be
+                provided.
+
+        Returns:
+            The NoaaRequest object it is called on, for chaining.
+        """
+        self.unit_system = units
+        return self
+
+    def station(self, station_id: int) -> 'NoaaRequest':
+        """Specify ID of the station to be queried.
+
+        Args:
+            station_id: A station ID.
+
+        Returns:
+            The NoaaRequest object it is called on, for chaining.
+        """
+        self.station_id = station_id
+        return self
+
+    def interval(self, interval: str) -> 'NoaaRequest':
+        """Specify the time interval to be used.
+
+        Time interval is an optional parameter. If it is not specified,
+        a time interval of six minutes will be used. If it is specified,
+        it may be "h", which will return data for every hour, or "hilo", which
+        will return data at high and low tides.
+
+        Args:
+            interval: The time interval to be used.
+
+        Returns:
+            The NoaaRequest object it is called on, for chaining.
+        """
+        self.interval_ = interval
+        return self
+
+    def timezone(self, tz: str) -> 'NoaaRequest':
+        """Specify the timezone to be used.
+
+        The timezone may be 'gmt', specifying the GMT timezone, 'lst',
+        specifying the local standard time of the station being queried but
+        not accounting for DST, or 'lst_ldt', specifying the local standard
+        time of the station being queried and accounting for DST.
+
+        Args:
+            tz: The timezone to be used.
+
+        Returns:
+            The NoaaRequest object it is called on, for chaining.
+        """
+        self.timezone_ = tz
+        return self
+
+    def __str__(self) -> str:
+        """Return the URL associated with this request."""
+        args = '&'.join([
+            str(self.time_range),
+            'product=' + self.noaa_product,
+            'datum=' + self.noaa_datum,
+            'units=' + self.unit_system,
+            'time_zone=' + self.timezone_,
+            'interval=' + self.interval_,
+            'station=' + str(self.station_id),
+        ])
+        return NoaaRequest.URL_FORMAT.format(args)
 
     def _ready(self, error: bool) -> bool:
         """Check if the request is ready to be executed.
@@ -106,10 +240,60 @@ class NoaaRequest(object):
         Raises:
             If `error` is True, may raise MalformedRequestException.
         """
-        return self._date_check()
+        if not self.time_range.is_valid():
+            return False
+        if self.noaa_product not in [
+            'water_level',
+            'air_temperature',
+            'wind',
+            'air_pressure',
+            'air_gap',
+            'conductivity',
+            'visibility',
+            'humidity',
+            'salinity',
+            'hourly_height',
+            'high_low',
+            'daily_mean',
+            'monthly_mean',
+            'one_minute_water_level',
+            'predictions',
+            'datums',
+            'currents'
+        ]:
+            return False
+        if self.noaa_datum not in [
+            'CRD',
+            'IGLD',
+            'LWD',
+            'MHHW',
+            'MHW',
+            'MTL',
+            'MSL',
+            'MLW',
+            'MLLW',
+            'NAVD',
+            'STND'
+        ]:
+            return False
+        if self.unit_system not in ['english', 'metric']:
+            return False
+        if self.timezone_ not in ['gmt', 'lst', 'lst_ldt']:
+            return False
+        if self.interval_ and self.interval_ not in ['hilo', 'h']:
+            return False
+
+        return True
 
 
 class NoaaTimeRange:
+    """Time range of a NOAA API request.
+
+    This is a group of several parameters for the time range of the API request
+    that will error-check their interactions and ensure that a valid date and
+    time string results.
+
+    """
     _FORMAT_STRING = '%Y%m%d %H:%M'
 
     TODAY = 'today'
