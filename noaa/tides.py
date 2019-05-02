@@ -5,15 +5,6 @@ import datetime
 import requests
 
 
-class MalformedRequestException(Exception):
-    """Exception raised when a NoaaRequest is submitted with invalid arguments.
-
-    The message should specify the missing or conflicting arguments. This
-    exception specifically indicates a syntax error.
-    """
-    pass
-
-
 class ApiError(Exception):
     """Exception raised when a well-formed NoaaRequest causes a server error.
 
@@ -53,11 +44,12 @@ class NoaaRequest(object):
             ApiError: if the request returns from the server with an error
         """
         if self._ready():
-            raise MalformedRequestException
+            raise ApiError(
+                'Request was malformed. Double-check parameters.')
         data = requests.get(str(self)).json()
         if 'error' in data:
             print(data['error'])
-            raise ApiError
+            raise ApiError(data['error'])
 
         return NoaaResult(data['predictions'])
 
