@@ -52,7 +52,7 @@ class NoaaRequest(object):
                 request, such as an invalid combination of instructions.
             ApiError: if the request returns from the server with an error
         """
-        if self._ready(True):
+        if self._ready():
             raise MalformedRequestException
         data = requests.get(str(self)).json()
         if 'error' in data:
@@ -223,7 +223,7 @@ class NoaaRequest(object):
         ])
         return NoaaRequest.URL_FORMAT.format(args)
 
-    def _ready(self, error: bool) -> bool:
+    def _ready(self) -> bool:
         """Check if the request is ready to be executed.
 
         The NOAA API documentation (https://tidesandcurrents.noaa.gov/api/)

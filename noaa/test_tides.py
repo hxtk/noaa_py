@@ -26,6 +26,21 @@ class TestNoaaRequest:
         assert query['datum'] == ['MLLW']
         assert query['time_zone'] == ['gmt']
 
+    def test_ready(self):
+        req = tides.NoaaRequest()\
+            .station(8720211)\
+            .product('predictions')\
+            .interval('hilo')\
+            .begin_date(datetime.datetime.fromisoformat('2019-05-01'))\
+            .end_date(datetime.datetime.fromisoformat('2019-05-02'))\
+            .units('english')\
+            .datum('MLLW')
+        assert not req._ready()
+        req.timezone('gmt')
+        assert req._ready()
+
+
+
 class TestNoaaTimeRange:
     def test_is_valid_beginAndEnd(self):
         time_range = tides.NoaaTimeRange()
