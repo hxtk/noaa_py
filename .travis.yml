@@ -12,7 +12,7 @@ python:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
-  - pip install codecov pytest-cov
+  - pip install codecov pytest-cov requests-mock
 # command to run tests
 env:
   - CODECOV_TOKEN="cd055358-17dd-47cf-84cd-a378bbd4d45f"

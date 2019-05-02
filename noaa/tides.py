@@ -1,5 +1,6 @@
 from typing import Mapping, Optional
 
+import collections
 import datetime
 import enum
 
@@ -16,12 +17,33 @@ class ApiError(Exception):
 
 
 class TimeZone(enum.Enum):
+    """Enumeration of timezones available to the API.
+
+    Returned data is time-stamped and those time stamps may be in one of the
+    time zones enumerated by this class.
+
+    GMT specifies the GMT time zone.
+    LOCAL specifies the local standard time, which does not change throughout
+        the year normally.
+    LOCAL_DST specifies the current local timezone which may be local standard
+        time or local daylight time depending on whether daylight savings
+        time is being observed.
+    """
     GMT = 'gmt'
     LOCAL = 'lst'
     LOCAL_DST = 'lst_ldt'
 
 
 class Interval(enum.Enum):
+    """Enumeration of data intervals available to the API.
+
+    By default, the API will return data for every six minutes.
+    Alternatively, one may specify one of the values enumerated below.
+
+    HILO returns data at high tide and low tide.
+    HOUR returns data at an interval of one hour.
+
+    """
     HILO = 'hilo'
     HOUR = 'h'
 
@@ -81,11 +103,31 @@ class Unit(enum.Enum):
     METRIC = 'metric'
 
 
+NoaaRow = collections.namedtuple('NoaaRow', 'time value type')
+
+
 class NoaaResult(object):
-    pass
+
+    _DATE_FORMAT = '%Y-%m-%d %H:%M'
+
+    def __init__(self, data):
+        self.rows = []
+        for row in data:
+            time = datetime.datetime.strptime(row['t'], NoaaResult._DATE_FORMAT)
+            value = float(row['v'])
+            row_type = row['type'] if 'type' in row else None
+            self.rows.append(NoaaRow(time, value, row_type))
+
+    def __iter__(self):
+        for row in self.rows:
+            yield row
+
+    def __len__(self):
+        return len(self.rows)
 
 
 class NoaaRequest(object):
+    """Builder for a request against the NOAA Tides and Currents API."""
     URL_FORMAT = 'https://tidesandcurrents.noaa.gov/api/datagetter?' \
                  '&application=noaa_py&format=json&{}'
 
@@ -105,9 +147,10 @@ class NoaaRequest(object):
             NoaaResult containing the data returned, if successful.
 
         Raises:
-            MalformedRequestException: if there is a syntax error with the
-                request, such as an invalid combination of instructions.
-            ApiError: if the request returns from the server with an error
+            ApiError: if the request returns from the server with an error or if
+                the request could not be sent because the parameters were
+                malformed such that the server could be guaranteed to return
+                error.
         """
         if self._ready():
             raise ApiError(
@@ -255,10 +298,10 @@ class NoaaRequest(object):
     def timezone(self, tz: TimeZone) -> 'NoaaRequest':
         """Specify the timezone to be used.
 
-        The timezone may be 'gmt', specifying the GMT timezone, 'lst',
-        specifying the local standard time of the station being queried but
-        not accounting for DST, or 'lst_ldt', specifying the local standard
-        time of the station being queried and accounting for DST.
+        The timezone may be TimeZone.GMT, specifying the GMT timezone,
+        TimeZone.LOCAL, specifying the local standard time of the station being
+        queried but not accounting for DST, or LOCAL_DST, specifying the local
+        standard time of the station being queried and accounting for DST.
 
         Args:
             tz: The timezone to be used.

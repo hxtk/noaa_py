@@ -69,6 +69,26 @@ class TestNoaaRequest:
             .timezone(tides.TimeZone.GMT)
         assert req._ready()
 
+    def test_execute(self, requests_mock):
+        req = tides.NoaaRequest() \
+            .station(8720211) \
+            .product(tides.Product.PREDICTIONS) \
+            .interval(tides.Interval.HILO) \
+            .begin_date(datetime.datetime.fromisoformat('2019-05-01')) \
+            .end_date(datetime.datetime.fromisoformat('2019-05-02')) \
+            .units(tides.Unit.ENGLISH) \
+            .datum(tides.Datum.MEAN_LOWER_LOW_WATER) \
+            .timezone(tides.TimeZone.GMT)
+        requests_mock.get(
+            str(req),
+            text='{ "predictions" : '
+                 '[ {"t":"2019-05-01 04:20", "v":"0.633", "type":"L"},'
+                 '{"t":"2019-05-01 10:50", "v":"4.453", "type":"H"},'
+                 '{"t":"2019-05-01 16:41", "v":"0.363", "type":"L"},'
+                 '{"t":"2019-05-01 23:12", "v":"4.776", "type":"H"} ]}')
+        res = req.execute()
+        assert len(res) == 4
+
 
 class TestNoaaTimeRange:
     def test_is_valid_beginAndEnd(self):
