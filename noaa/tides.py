@@ -12,7 +12,6 @@ class ApiError(Exception):
     to raise an error if something goes wrong or if something is wrong with
     the request other than its syntax.
     """
-    pass
 
 
 class NoaaResult(object):
@@ -104,7 +103,7 @@ class NoaaRequest(object):
             The NoaaRequest object it is called on, for chaining.
 
         """
-        self.time_range.hours = hours
+        self.time_range.range = hours
         return self
 
     def product(self, product: str) -> 'NoaaRequest':
@@ -232,50 +231,47 @@ class NoaaRequest(object):
         Raises:
             If `error` is True, may raise MalformedRequestException.
         """
+        res = True
         if not self.time_range.is_valid():
-            return False
-        if self.noaa_product not in [
-            'water_level',
-            'air_temperature',
-            'wind',
-            'air_pressure',
-            'air_gap',
-            'conductivity',
-            'visibility',
-            'humidity',
-            'salinity',
-            'hourly_height',
-            'high_low',
-            'daily_mean',
-            'monthly_mean',
-            'one_minute_water_level',
-            'predictions',
-            'datums',
-            'currents'
-        ]:
-            return False
-        if self.noaa_datum not in [
-            'CRD',
-            'IGLD',
-            'LWD',
-            'MHHW',
-            'MHW',
-            'MTL',
-            'MSL',
-            'MLW',
-            'MLLW',
-            'NAVD',
-            'STND'
-        ]:
-            return False
+            res = False
+        if self.noaa_product not in ['water_level',
+                                     'air_temperature',
+                                     'wind',
+                                     'air_pressure',
+                                     'air_gap',
+                                     'conductivity',
+                                     'visibility',
+                                     'humidity',
+                                     'salinity',
+                                     'hourly_height',
+                                     'high_low',
+                                     'daily_mean',
+                                     'monthly_mean',
+                                     'one_minute_water_level',
+                                     'predictions',
+                                     'datums',
+                                     'currents']:
+            res = False
+        if self.noaa_datum not in ['CRD',
+                                   'IGLD',
+                                   'LWD',
+                                   'MHHW',
+                                   'MHW',
+                                   'MTL',
+                                   'MSL',
+                                   'MLW',
+                                   'MLLW',
+                                   'NAVD',
+                                   'STND']:
+            res = False
         if self.unit_system not in ['english', 'metric']:
-            return False
+            res = False
         if self.timezone_ not in ['gmt', 'lst', 'lst_ldt']:
-            return False
+            res = False
         if self.interval_ and self.interval_ not in ['hilo', 'h']:
-            return False
+            res = False
 
-        return True
+        return res
 
 
 class NoaaTimeRange:
