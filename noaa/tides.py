@@ -15,6 +15,12 @@ class ApiError(Exception):
     """
 
 
+class TimeZone(enum.Enum):
+    GMT = 'gmt'
+    LOCAL = 'lst'
+    LOCAL_DST = 'lst_dst'
+
+
 class Interval(enum.Enum):
     HILO = 'hilo'
     HOUR = 'h'
@@ -70,7 +76,7 @@ class NoaaRequest(object):
         self.unit_system: str = None
         self.station_id: int = None
         self.interval_: Optional[Interval] = None
-        self.timezone_: str = None
+        self.timezone_: TimeZone = None
 
     def execute(self) -> 'NoaaResult':
         """Executes the built request.
@@ -228,7 +234,7 @@ class NoaaRequest(object):
         self.interval_ = interval
         return self
 
-    def timezone(self, tz: str) -> 'NoaaRequest':
+    def timezone(self, tz: TimeZone) -> 'NoaaRequest':
         """Specify the timezone to be used.
 
         The timezone may be 'gmt', specifying the GMT timezone, 'lst',
@@ -252,7 +258,7 @@ class NoaaRequest(object):
             'product=' + self.noaa_product.value,
             'datum=' + self.noaa_datum.value,
             'units=' + self.unit_system,
-            'time_zone=' + self.timezone_,
+            'time_zone=' + self.timezone_.value,
             'interval=' + self.interval_.value if self.interval_ else '',
             'station=' + str(self.station_id),
         ])

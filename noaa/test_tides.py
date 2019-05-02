@@ -15,7 +15,7 @@ class TestNoaaRequest:
             .end_date(datetime.datetime.fromisoformat('2019-05-02'))\
             .units('english')\
             .datum(tides.Datum.MEAN_LOWER_LOW_WATER)\
-            .timezone('gmt')
+            .timezone(tides.TimeZone.GMT)
         query = parse.parse_qs(parse.urlparse(str(req)).query)
         assert query['product'] == ['predictions']
         assert query['station'] == ['8720211']
@@ -34,7 +34,7 @@ class TestNoaaRequest:
             .end_date(datetime.datetime.fromisoformat('2019-05-02'))\
             .units('english')\
             .datum(tides.Datum.MEAN_LOWER_LOW_WATER)\
-            .timezone('gmt')
+            .timezone(tides.TimeZone.GMT)
         query = parse.parse_qs(parse.urlparse(str(req)).query)
         assert query['product'] == ['predictions']
         assert query['station'] == ['8720211']
@@ -55,7 +55,7 @@ class TestNoaaRequest:
             .units('english')\
             .datum(tides.Datum.MEAN_LOWER_LOW_WATER)
         assert not req._ready()
-        req.timezone('gmt')
+        req.timezone(tides.TimeZone.GMT)
         assert req._ready()
 
 
