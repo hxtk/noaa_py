@@ -51,3 +51,11 @@ class TestNoaaTimeRange:
         time_range.begin = datetime.datetime.fromisoformat('2019-01-02')
         time_range.end = datetime.datetime.fromisoformat('2019-01-01')
         assert not time_range.is_valid()
+
+    def test_str(self):
+        time_range = tides.NoaaTimeRange()
+        time_range.begin = datetime.datetime.fromisoformat('2019-04-15')
+        time_range.end = datetime.datetime.fromisoformat('2019-10-21')
+
+        assert str(time_range) == 'begin_date=20190415 ' \
+                                  '00:00&end_date=20191021 00:00'
