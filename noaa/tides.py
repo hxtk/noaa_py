@@ -1,6 +1,7 @@
 from typing import Mapping
 
 import datetime
+import enum
 
 import requests
 
@@ -14,6 +15,41 @@ class ApiError(Exception):
     """
 
 
+class Datum(enum.Enum):
+    COLUMBIA_RIVER = 'CRD'
+    GREAT_LAKES = 'IGLD'
+    GREAT_LAKES_LOW_WATER = 'LWD'
+    MEAN_HIGHER_HIGH_WATER = 'MHHW'
+    MEAN_HIGH_WATER = 'MHW'
+    MEAN_TIDE_LEVEL = 'MTL'
+    MEAN_SEA_LEVEL = 'MSL'
+    MEAN_LOW_WATER = 'MLW'
+    MEAN_LOWER_LOW_WATER = 'MLLW'
+    N_AMERICAN_VERTICAL = 'NAVD'
+    STATION = 'STND'
+
+
+class Product(enum.Enum):
+    WATER_LEVEL = 'water_level'
+    AIR_TEMP = 'air_temperature'
+    WATER_TEMP = 'water_temp'
+    WIND = 'wind'
+    AIR_PRESSURE = 'air_pressure'
+    AIR_GAP = 'air_gap'
+    CONDUCT = 'conductivity'
+    VIS = 'visibility'
+    HUMIDITY = 'humidity'
+    SALINITY = 'salinity'
+    HOURLY_HEIGHT = 'hourly_height'
+    HIGH_LOW = 'high_low'
+    DAILY_MEAN = 'daily_mean'
+    MONTHLY_MEAN = 'monthly_mean'
+    ONE_MIN_WL = 'one_minute_water_level'
+    PREDICTIONS = 'predictions'
+    DATUMS = 'datums'
+    CURRENTS = 'currents'
+
+
 class NoaaResult(object):
     pass
 
@@ -24,8 +60,8 @@ class NoaaRequest(object):
 
     def __init__(self):
         self.time_range = NoaaTimeRange()
-        self.noaa_product: str = None
-        self.noaa_datum: str = None
+        self.noaa_product: Product = None
+        self.noaa_datum: Datum = None
         self.unit_system: str = None
         self.station_id: int = None
         self.interval_: str = None
@@ -106,7 +142,7 @@ class NoaaRequest(object):
         self.time_range.range = hours
         return self
 
-    def product(self, product: str) -> 'NoaaRequest':
+    def product(self, product: Product) -> 'NoaaRequest':
         """Sets the NOAA product to be queried.
 
         A complete listing of valid products can be found here:
@@ -118,10 +154,13 @@ class NoaaRequest(object):
         Returns:
             The NoaaRequest object it is called on, for chaining.
         """
-        self.noaa_product = product
+        if isinstance(product, Product):
+            self.noaa_product = product
+        else:
+            self.noaa_product = Product(product)
         return self
 
-    def datum(self, datum: str) -> 'NoaaRequest':
+    def datum(self, datum: Datum) -> 'NoaaRequest':
         """Specify NOAA Datum.
 
         This is an optional argument required if the specified product is a
@@ -205,8 +244,8 @@ class NoaaRequest(object):
         """Return the URL associated with this request."""
         args = '&'.join([
             str(self.time_range),
-            'product=' + self.noaa_product,
-            'datum=' + self.noaa_datum,
+            'product=' + self.noaa_product.value,
+            'datum=' + self.noaa_datum.value,
             'units=' + self.unit_system,
             'time_zone=' + self.timezone_,
             'interval=' + self.interval_,
@@ -234,35 +273,9 @@ class NoaaRequest(object):
         res = True
         if not self.time_range.is_valid():
             res = False
-        if self.noaa_product not in ['water_level',
-                                     'air_temperature',
-                                     'wind',
-                                     'air_pressure',
-                                     'air_gap',
-                                     'conductivity',
-                                     'visibility',
-                                     'humidity',
-                                     'salinity',
-                                     'hourly_height',
-                                     'high_low',
-                                     'daily_mean',
-                                     'monthly_mean',
-                                     'one_minute_water_level',
-                                     'predictions',
-                                     'datums',
-                                     'currents']:
+        if not isinstance(self.noaa_product, Product):
             res = False
-        if self.noaa_datum not in ['CRD',
-                                   'IGLD',
-                                   'LWD',
-                                   'MHHW',
-                                   'MHW',
-                                   'MTL',
-                                   'MSL',
-                                   'MLW',
-                                   'MLLW',
-                                   'NAVD',
-                                   'STND']:
+        if not isinstance(self.noaa_datum, Datum):
             res = False
         if self.unit_system not in ['english', 'metric']:
             res = False
