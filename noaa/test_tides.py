@@ -2,6 +2,8 @@
 import datetime
 from urllib import parse
 
+import pytest
+
 from . import tides
 
 
@@ -69,7 +71,7 @@ class TestNoaaRequest:
             .timezone(tides.TimeZone.GMT)
         assert req._ready()
 
-    def test_execute(self, requests_mock):
+    def test_execute_good_request(self, requests_mock):
         req = tides.NoaaRequest() \
             .station(8720211) \
             .product(tides.Product.PREDICTIONS) \
@@ -88,6 +90,24 @@ class TestNoaaRequest:
                  '{"t":"2019-05-01 23:12", "v":"4.776", "type":"H"} ]}')
         res = req.execute()
         assert len(res) == 4
+
+    def test_execute_bad_request(self, requests_mock):
+        req = tides.NoaaRequest() \
+            .station(8720211) \
+            .product(tides.Product.PREDICTIONS) \
+            .interval(tides.Interval.HILO) \
+            .begin_date(datetime.datetime.fromisoformat('2019-05-01')) \
+            .end_date(datetime.datetime.fromisoformat('2019-05-02')) \
+            .units(tides.Unit.ENGLISH) \
+            .datum(tides.Datum.MEAN_LOWER_LOW_WATER) \
+            .timezone(tides.TimeZone.GMT)
+        requests_mock.get(
+            str(req),
+            text='{"error": {"message":"No Predictions data was found. This '
+                 'product may not be offered at this station at the requested '
+                 'time."}} ')
+        with pytest.raises(tides.ApiError):
+            res = req.execute()
 
 
 class TestNoaaTimeRange:

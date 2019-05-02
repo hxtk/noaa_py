@@ -227,10 +227,7 @@ class NoaaRequest(object):
 
         See Also: NoaaProduct
         """
-        if isinstance(product, Product):
-            self.noaa_product = product
-        else:
-            self.noaa_product = Product(product)
+        self.noaa_product = product
         return self
 
     def datum(self, datum: Datum) -> 'NoaaRequest':
