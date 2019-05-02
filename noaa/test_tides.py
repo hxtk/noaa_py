@@ -69,7 +69,7 @@ class TestNoaaTimeRange:
     def test_is_valid_endpointAndRange(self):
         time_range = tides.NoaaTimeRange()
         time_range.begin = datetime.datetime.fromisoformat('2019-04-15')
-        time_range.range = 10
+        time_range.hours = 10
         assert time_range.is_valid()
 
         time_range.begin = None
@@ -78,13 +78,13 @@ class TestNoaaTimeRange:
 
     def test_is_valid_date(self):
         time_range = tides.NoaaTimeRange()
-        time_range.date = tides.NoaaTimeRange.RECENT
+        time_range.date = tides.NoaaDate.RECENT
         assert time_range.is_valid()
 
-        time_range.date = tides.NoaaTimeRange.TODAY
+        time_range.date = tides.NoaaDate.TODAY
         assert time_range.is_valid()
 
-        time_range.date = tides.NoaaTimeRange.LATEST
+        time_range.date = tides.NoaaDate.LATEST
         assert time_range.is_valid()
 
         time_range.date = 'foo'
@@ -92,21 +92,21 @@ class TestNoaaTimeRange:
 
     def test_is_valid_rangeOnly(self):
         time_range = tides.NoaaTimeRange()
-        time_range.range = 10
+        time_range.hours = 10
         assert time_range.is_valid()
 
-        time_range.range = -10
+        time_range.hours = -10
         assert not time_range.is_valid()
 
     def test_is_valid_tooManyFields(self):
         time_range = tides.NoaaTimeRange()
         time_range.begin = datetime.datetime.fromisoformat('2019-01-01')
-        time_range.date = tides.NoaaTimeRange.TODAY
+        time_range.date = tides.NoaaDate.TODAY
         assert not time_range.is_valid()
 
         time_range.date = None
         time_range.end = datetime.datetime.fromisoformat('2019-01-02')
-        time_range.range = 32
+        time_range.hours = 32
         assert not time_range.is_valid()
 
     def test_is_valid_endBeforeStart(self):
@@ -126,13 +126,13 @@ class TestNoaaTimeRange:
     def test_str_startAndRange(self):
         time_range = tides.NoaaTimeRange()
         time_range.begin = datetime.datetime.fromisoformat('2019-04-15')
-        time_range.range = 10
+        time_range.hours = 10
 
         assert str(time_range) == 'begin_date=20190415 00:00&' \
                                   'range=10'
 
     def test_str_date(self):
         time_range = tides.NoaaTimeRange()
-        time_range.date = tides.NoaaTimeRange.TODAY
+        time_range.date = tides.NoaaDate.TODAY
 
         assert str(time_range) == 'date=today'

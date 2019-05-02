@@ -298,6 +298,12 @@ class NoaaRequest(object):
         return res
 
 
+class NoaaDate(enum.Enum):
+    TODAY = 'today'
+    LATEST = 'latest'
+    RECENT = 'recent'
+
+
 class NoaaTimeRange:
     """Time range of a NOAA API request.
 
@@ -308,15 +314,11 @@ class NoaaTimeRange:
     """
     _FORMAT_STRING = '%Y%m%d %H:%M'
 
-    TODAY = 'today'
-    LATEST = 'latest'
-    RECENT = 'recent'
-
     def __init__(self):
         self.begin: datetime.datetime = None
         self.end: datetime.datetime = None
-        self.range: int = None
-        self.date: str = None
+        self.hours: int = None
+        self.date: NoaaDate = None
 
     def is_valid(self) -> bool:
         """Checks if this is a well-formed range for NOAA's API.
@@ -335,24 +337,22 @@ class NoaaTimeRange:
 
         """
         # Beginning and an end:
-        if self.begin and self.end and not (self.range or self.date):
+        if self.begin and self.end and not (self.hours or self.date):
             return self.begin < self.end
 
         # Endpoint and duration:
-        if self.begin and self.range and not (self.end or self.date):
-            return self.range > 0
-        if self.end and self.range and not (self.begin or self.date):
-            return self.range > 0
+        if self.begin and self.hours and not (self.end or self.date):
+            return self.hours > 0
+        if self.end and self.hours and not (self.begin or self.date):
+            return self.hours > 0
 
         # Duration and implicit endpoint:
-        if self.range and not (self.begin or self.end or self.date):
-            return self.range > 0
+        if self.hours and not (self.begin or self.end or self.date):
+            return self.hours > 0
 
         # Date constant from enum
-        if self.date and not (self.begin or self.end or self.range):
-            return self.date in [NoaaTimeRange.TODAY,
-                                 NoaaTimeRange.LATEST,
-                                 NoaaTimeRange.RECENT]
+        if self.date and not (self.begin or self.end or self.hours):
+            return isinstance(self.date, NoaaDate)
 
         return False
 
@@ -365,10 +365,10 @@ class NoaaTimeRange:
         if self.end:
             res['end_date'] = self.end.strftime(
                 NoaaTimeRange._FORMAT_STRING)
-        if self.range:
-            res['range'] = str(self.range)
+        if self.hours:
+            res['range'] = str(self.hours)
         if self.date:
-            res['date'] = self.date
+            res['date'] = self.date.value
         return res
 
     def __str__(self) -> str:
