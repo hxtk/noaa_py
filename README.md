@@ -4,6 +4,6 @@ This is intended to be a Python library for using the NOAA APIs. The milestone c
 
 ## Installation
 
-TODO (Does not currently work):
+TODO (Not currently confirmed to work):
 
 `pip install git+https://github.com/hxtk/noaa_py.git`
