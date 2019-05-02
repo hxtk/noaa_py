@@ -152,7 +152,7 @@ class NoaaRequest(object):
                 malformed such that the server could be guaranteed to return
                 error.
         """
-        if self._ready():
+        if not self._ready():
             raise ApiError(
                 'Request was malformed. Double-check parameters.')
         data = requests.get(str(self)).json()
