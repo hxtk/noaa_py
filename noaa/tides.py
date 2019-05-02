@@ -160,14 +160,14 @@ class NoaaTimeRange:
 
         return False
 
-    def as_dict_(self) -> Mapping[str, str]:
+    def as_dict(self) -> Mapping[str, str]:
         """Dictionary for this time range."""
         res = dict()
         if self.begin:
             res['begin_date'] = self.begin.strftime(
                 NoaaTimeRange._FORMAT_STRING)
         if self.end:
-            res['end_date'] = self.begin.strftime(
+            res['end_date'] = self.end.strftime(
                 NoaaTimeRange._FORMAT_STRING)
         if self.range:
             res['range'] = str(self.range)
@@ -178,5 +178,5 @@ class NoaaTimeRange:
     def __str__(self) -> str:
         """URL-encoded string representing this time range."""
         return '&'.join(map(
-            lambda k, v: '{}={}'.format(k,v),
-            self.as_dict().items))
+            lambda x: '{}={}'.format(*x),
+            self.as_dict().items()))
