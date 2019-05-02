@@ -59,7 +59,6 @@ class TestNoaaRequest:
         assert req._ready()
 
 
-
 class TestNoaaTimeRange:
     def test_is_valid_beginAndEnd(self):
         time_range = tides.NoaaTimeRange()

@@ -18,7 +18,7 @@ class ApiError(Exception):
 class TimeZone(enum.Enum):
     GMT = 'gmt'
     LOCAL = 'lst'
-    LOCAL_DST = 'lst_dst'
+    LOCAL_DST = 'lst_ldt'
 
 
 class Interval(enum.Enum):
@@ -290,7 +290,7 @@ class NoaaRequest(object):
             res = False
         if self.unit_system not in ['english', 'metric']:
             res = False
-        if self.timezone_ not in ['gmt', 'lst', 'lst_ldt']:
+        if not isinstance(self.timezone_, TimeZone):
             res = False
         if self.interval_ and not isinstance(self.interval_, Interval):
             res = False
