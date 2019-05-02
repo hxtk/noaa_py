@@ -208,15 +208,17 @@ class NoaaRequest(object):
     def units(self, units: Unit) -> 'NoaaRequest':
         """Specify the unit system to be used.
 
-        One may use 'english' or 'metric' to specify either of those two unit
+        One must use a `tides.Unit` to specify one of the two available unit
         systems.
 
         Args:
-            units: The name of the unit system in which the results should be
-                provided.
+            units: The unit system in which the results should be provided.
 
         Returns:
             The NoaaRequest object it is called on, for chaining.
+
+        See Also:
+            tides.Unit
         """
         self.unit_system = units
         return self
@@ -238,8 +240,8 @@ class NoaaRequest(object):
 
         Time interval is an optional parameter. If it is not specified,
         a time interval of six minutes will be used. If it is specified,
-        it may be "h", which will return data for every hour, or "hilo", which
-        will return data at high and low tides.
+        it may be Interval.HOUR, which will return data for every hour,
+        or Interval.HILO, which will return data at high and low tides.
 
         Args:
             interval: The time interval to be used.
