@@ -305,7 +305,7 @@ class NoaaRequest(object):
             res = False
         if not isinstance(self.noaa_datum, Datum):
             res = False
-        if self.unit_system not in ['english', 'metric']:
+        if not isinstance(self.unit_system, Unit):
             res = False
         if not isinstance(self.timezone_, TimeZone):
             res = False
