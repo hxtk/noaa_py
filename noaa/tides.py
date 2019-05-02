@@ -253,13 +253,14 @@ class NoaaRequest(object):
 
     def __str__(self) -> str:
         """Return the URL associated with this request."""
+        interval = self.interval_.value if self.interval_ else ''
         args = '&'.join([
             str(self.time_range),
             'product=' + self.noaa_product.value,
             'datum=' + self.noaa_datum.value,
             'units=' + self.unit_system,
             'time_zone=' + self.timezone_.value,
-            'interval=' + self.interval_.value if self.interval_ else '',
+            'interval=' + interval,
             'station=' + str(self.station_id),
         ])
         return NoaaRequest.URL_FORMAT.format(args)
