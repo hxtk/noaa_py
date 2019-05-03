@@ -103,6 +103,18 @@ class Unit(enum.Enum):
     METRIC = 'metric'
 
 
+class NoaaDate(enum.Enum):
+    """Magic number time range specifiers.
+
+    TODAY refers to the 24-hour period beginning at the most recent midnight.
+    LATEST refers to the latest data point available.
+    RECENT refers to the 72-hour period ending at the most recent data-point.
+    """
+    TODAY = 'today'
+    LATEST = 'latest'
+    RECENT = 'recent'
+
+
 NoaaRow = collections.namedtuple('NoaaRow', 'time value type')
 
 
@@ -152,12 +164,9 @@ class NoaaRequest(object):
                 malformed such that the server could be guaranteed to return
                 error.
         """
-        if not self._ready():
-            raise ApiError(
-                'Request was malformed. Double-check parameters.')
+        self._ready(error=True)
         data = requests.get(str(self)).json()
         if 'error' in data:
-            print(data['error'])
             raise ApiError(data['error']['message'])
 
         return NoaaResult(data['predictions'])
@@ -214,6 +223,26 @@ class NoaaRequest(object):
 
         """
         self.time_range.hours = hours
+        return self
+
+    def date(self, date: NoaaDate) -> 'NoaaRequest':
+        """Set the named time range for the result.
+
+        NOAA specifies three named time ranges, which are documented in
+        NoaaDate's documentation.
+
+        This time specification cannot be used in conjunction with any other
+        specification.
+
+        Args:
+            date: The Date constant to be used.
+
+        Returns:
+            The NoaaRequest object it is called on, for chaining.
+
+        See Also: NoaaDate
+        """
+        self.time_range.date = date
         return self
 
     def product(self, product: Product) -> 'NoaaRequest':
@@ -323,7 +352,7 @@ class NoaaRequest(object):
         ])
         return NoaaRequest.URL_FORMAT.format(args)
 
-    def _ready(self) -> bool:
+    def _ready(self, error=False) -> bool:
         """Check if the request is ready to be executed.
 
         The NOAA API documentation (https://tidesandcurrents.noaa.gov/api/)
@@ -343,30 +372,30 @@ class NoaaRequest(object):
         res = True
         if not self.time_range.is_valid():
             res = False
+            if error:
+                raise ApiError('Invalid time range specification.')
         if not isinstance(self.noaa_product, Product):
             res = False
+            if error:
+                raise ApiError('Invalid or absent NOAA Product.')
         if not isinstance(self.noaa_datum, Datum):
             res = False
+            if error:
+                raise ApiError('Invalid or absent NOAA Datum.')
         if not isinstance(self.unit_system, Unit):
             res = False
+            if error:
+                raise ApiError('Invalid or absent Unit specification.')
         if not isinstance(self.timezone_, TimeZone):
             res = False
+            if error:
+                raise ApiError('Invalid or absent Timezone.')
         if self.interval_ and not isinstance(self.interval_, Interval):
             res = False
+            if error:
+                raise ApiError('Invalid data interval.')
 
         return res
-
-
-class NoaaDate(enum.Enum):
-    """Magic number time range specifiers.
-
-    TODAY refers to the 24-hour period beginning at the most recent midnight.
-    LATEST refers to the latest data point available.
-    RECENT refers to the 72-hour period ending at the most recent data-point.
-    """
-    TODAY = 'today'
-    LATEST = 'latest'
-    RECENT = 'recent'
 
 
 class NoaaTimeRange:
