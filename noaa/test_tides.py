@@ -71,7 +71,7 @@ class TestNoaaRequest:
             .timezone(tides.TimeZone.GMT)
         assert req._ready()
 
-    def test_execute_good_request(self, requests_mock):
+    def test_execute_predictions_request(self, requests_mock):
         req = tides.NoaaRequest() \
             .station(8720211) \
             .product(tides.Product.PREDICTIONS) \
@@ -108,6 +108,34 @@ class TestNoaaRequest:
                  'time."}} ')
         with pytest.raises(tides.ApiError):
             res = req.execute()
+
+    def test_execute_waterlevel_request(self, requests_mock):
+        req = tides.NoaaRequest() \
+            .station(8735180) \
+            .product(tides.Product.WATER_LEVEL) \
+            .interval(tides.Interval.HOUR) \
+            .range(1) \
+            .units(tides.Unit.ENGLISH) \
+            .datum(tides.Datum.MEAN_LOWER_LOW_WATER) \
+            .timezone(tides.TimeZone.GMT)
+        requests_mock.get(
+            str(req),
+            text='{"metadata":{"id":"8735180","name":"Dauphin Island",'
+                 '"lat":"30.2500","lon":"-88.0750"}, "data": [{'
+                 '"t":"2019-05-07 18:24", "v":"1.669", "s":"0.023", "f":"0,0,'
+                 '0,0", "q":"p"},{"t":"2019-05-07 18:30", "v":"1.674", '
+                 '"s":"0.023", "f":"0,0,0,0", "q":"p"},{"t":"2019-05-07 '
+                 '18:36", "v":"1.674", "s":"0.033", "f":"0,0,0,0", "q":"p"},'
+                 '{"t":"2019-05-07 18:42", "v":"1.655", "s":"0.030", "f":"1,'
+                 '0,0,0", "q":"p"},{"t":"2019-05-07 18:48", "v":"1.574", '
+                 '"s":"0.026", "f":"1,0,0,0", "q":"p"},{"t":"2019-05-07 '
+                 '18:54", "v":"1.564", "s":"0.033", "f":"1,0,0,0", "q":"p"},'
+                 '{"t":"2019-05-07 19:00", "v":"1.502", "s":"0.026", "f":"1,'
+                 '0,0,0", "q":"p"},{"t":"2019-05-07 19:06", "v":"1.483", '
+                 '"s":"0.030", "f":"1,0,0,0", "q":"p"},{"t":"2019-05-07 '
+                 '19:12", "v":"1.459", "s":"0.026", "f":"1,0,0,0", "q":"p"}]}')
+        res = req.execute()
+        assert len(res) == 9
 
 
 class TestNoaaTimeRange:
