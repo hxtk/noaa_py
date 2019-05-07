@@ -57,6 +57,9 @@ class TestNoaaRequest:
             .units(tides.Unit.ENGLISH)\
             .datum(tides.Datum.MEAN_LOWER_LOW_WATER)
         assert not req._ready()
+        with pytest.raises(tides.ApiError):
+            assert not req._ready(error=True)
+
         req.timezone(tides.TimeZone.GMT)
         assert req._ready()
 
