@@ -115,24 +115,59 @@ class NoaaDate(enum.Enum):
     RECENT = 'recent'
 
 
-NoaaRow = collections.namedtuple('NoaaRow', 'time value type')
+DataRow = collections.namedtuple('DataRow', 'time value stdev flags quality')
 
 
-class NoaaResult(object):
+class DataResult:
 
     _DATE_FORMAT = '%Y-%m-%d %H:%M'
 
     def __init__(self, data):
         self.rows = []
         for row in data:
-            time = datetime.datetime.strptime(row['t'], NoaaResult._DATE_FORMAT)
+            time = datetime.datetime.strptime(
+                row['t'],
+                DataResult._DATE_FORMAT)
             value = float(row['v'])
-            row_type = row['type'] if 'type' in row else None
-            self.rows.append(NoaaRow(time, value, row_type))
+            stdev = float(row['s'])
+            flags = [int(x) == 1 for x in row['f'].split(',')]
+            quality = row['q']
+            self.rows.append(DataRow(time, value, stdev, flags, quality))
 
     def __iter__(self):
         for row in self.rows:
             yield row
+
+    def __getitem__(self, item: int) -> DataRow:
+        return self.rows[item]
+
+    def __len__(self):
+        return len(self.rows)
+
+
+PredictionsRow = collections.namedtuple('PredictionsRow', 'time value type')
+
+
+class PredictionsResult:
+
+    _DATE_FORMAT = '%Y-%m-%d %H:%M'
+
+    def __init__(self, data):
+        self.rows = []
+        for row in data:
+            time = datetime.datetime.strptime(
+                row['t'],
+                PredictionsResult._DATE_FORMAT)
+            value = float(row['v'])
+            row_type = row['type'] if 'type' in row else None
+            self.rows.append(PredictionsRow(time, value, row_type))
+
+    def __iter__(self):
+        for row in self.rows:
+            yield row
+
+    def __getitem__(self, item: int) -> PredictionsRow:
+        return self.rows[item]
 
     def __len__(self):
         return len(self.rows)
@@ -169,7 +204,9 @@ class NoaaRequest(object):
         if 'error' in data:
             raise ApiError(data['error']['message'])
 
-        return NoaaResult(data['predictions'])
+        if self.noaa_product == Product.PREDICTIONS:
+            return PredictionsResult(data['predictions'])
+        return DataResult(data['data'])
 
     def begin_date(self, begin: datetime.datetime) -> 'NoaaRequest':
         """Set the beginning date for the result.
