@@ -113,7 +113,6 @@ class TestNoaaRequest:
         req = tides.NoaaRequest() \
             .station(8735180) \
             .product(tides.Product.WATER_LEVEL) \
-            .interval(tides.Interval.HOUR) \
             .range(1) \
             .units(tides.Unit.ENGLISH) \
             .datum(tides.Datum.MEAN_LOWER_LOW_WATER) \
