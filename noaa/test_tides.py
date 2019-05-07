@@ -90,6 +90,8 @@ class TestNoaaRequest:
                  '{"t":"2019-05-01 23:12", "v":"4.776", "type":"H"} ]}')
         res = req.execute()
         assert len(res) == 4
+        assert res[0].type == 'L'
+        assert abs(res[1].value - 4.453) < 0.001
 
     def test_execute_bad_request(self, requests_mock):
         req = tides.NoaaRequest() \
@@ -135,6 +137,8 @@ class TestNoaaRequest:
                  '19:12", "v":"1.459", "s":"0.026", "f":"1,0,0,0", "q":"p"}]}')
         res = req.execute()
         assert len(res) == 9
+        assert abs(res[0].value - 1.669) < 0.001
+        assert len(res[0].flags) == 4
 
 
 class TestNoaaTimeRange:
