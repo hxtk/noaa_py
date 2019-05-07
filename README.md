@@ -4,4 +4,21 @@ This is intended to be a Python library for using the NOAA APIs. The milestone c
 
 ## Installation
 
+### From the command line
+
 `pip install git+https://github.com/hxtk/noaa_py.git`
+
+### In your `setup.py` file
+
+```python
+setup(
+	...
+	dependency_links=['http://github.com/hxtk/noaa_py/tarball/master#egg=noaa_py-0.0.1.dev']
+	...
+)
+```
+
+### In your `requirements.txt` file
+
+`git+https://github.com/hxtk/noaa_py.git#egg=noaa_py-0.0.1.dev`
+
