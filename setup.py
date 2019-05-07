@@ -5,9 +5,9 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="noaa_py",
-    version="0.0.1-dev",
+    version="0.0.1.dev",
     author="Peter Sanders",
-    author_email="author@example.com",
+    author_email="dev@psanders.me",
     description="NOAA Python API",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -22,3 +22,4 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
 )
+
