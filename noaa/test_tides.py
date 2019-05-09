@@ -149,6 +149,7 @@ class TestNoaaRequest:
         req.datum('MLLW')
         req.units('english')
         req.timezone('gmt')
+        req.date('today')
 
         with pytest.raises(ValueError):
             req.product('foo')
@@ -161,6 +162,9 @@ class TestNoaaRequest:
 
         with pytest.raises(ValueError):
             req.timezone('foo')
+
+        with pytest.raises(ValueError):
+            req.date('foo')
 
 
 class TestNoaaTimeRange:
