@@ -150,6 +150,7 @@ class TestNoaaRequest:
         req.units('english')
         req.timezone('gmt')
         req.date('today')
+        req.interval('hilo')
 
         with pytest.raises(ValueError):
             req.product('foo')
@@ -165,6 +166,9 @@ class TestNoaaRequest:
 
         with pytest.raises(ValueError):
             req.date('foo')
+
+        with pytest.raises(ValueError):
+            req.interval('foo')
 
     def test_ready_bad_time(self):
         req = tides.NoaaRequest() \
