@@ -116,6 +116,7 @@ class NoaaDate(enum.Enum):
 
 
 class DataRow(typing.NamedTuple):
+    """A single data point from a standard NOAA data product."""
     time: datetime.datetime
     value: float
     stdev: float
@@ -124,7 +125,7 @@ class DataRow(typing.NamedTuple):
 
 
 class DataResult:
-
+    """An immutable wrapper for a list of DataRow objects."""
     _DATE_FORMAT = '%Y-%m-%d %H:%M'
 
     def __init__(self, data):
@@ -151,13 +152,14 @@ class DataResult:
 
 
 class PredictionsRow(typing.NamedTuple):
+    """A single data point for a NOAA tide predictions response."""
     time: datetime.datetime
     value: float
     type: str
 
 
 class PredictionsResult:
-
+    """An immutable wrapper for a list of PredictionsRow objects."""
     _DATE_FORMAT = '%Y-%m-%d %H:%M'
 
     def __init__(self, data):
@@ -280,7 +282,8 @@ class NoaaRequest(object):
         specification.
 
         Args:
-            date: The Date constant to be used.
+            date: The Date constant to be used. This may be specified using a
+                NoaaDate enum or by specifying the string value of a valid enum.
 
         Returns:
             The NoaaRequest object it is called on, for chaining.
@@ -297,7 +300,8 @@ class NoaaRequest(object):
         """Sets the NOAA product to be queried.
 
         Args:
-            product: the string specifying the product to be used.
+            product: the string specifying the product to be used. This may be
+                passed as a Product enum or as a string specifying a product.
 
         Returns:
             The NoaaRequest object it is called on, for chaining.
@@ -317,7 +321,8 @@ class NoaaRequest(object):
         water level product.
 
         Args:
-            datum: The NOAA datum to be requested.
+            datum: The NOAA datum to be requested. This may be given as a Datum
+                enum or as the string specifying a valid datum.
 
         Returns:
             The NoaaRequest object it is called on, for chaining.
@@ -336,6 +341,8 @@ class NoaaRequest(object):
 
         Args:
             units: The unit system in which the results should be provided.
+                This may use the `Unit.ENGLISH` or `Unit.METRIC` enums or their
+                corresponding string values.
 
         Returns:
             The NoaaRequest object it is called on, for chaining.
@@ -370,7 +377,8 @@ class NoaaRequest(object):
         or Interval.HILO, which will return data at high and low tides.
 
         Args:
-            interval: The time interval to be used.
+            interval: The time interval to be used, specified by an Interval
+                enum or a corresponding string value.
 
         Returns:
             The NoaaRequest object it is called on, for chaining.
@@ -390,7 +398,7 @@ class NoaaRequest(object):
         standard time of the station being queried and accounting for DST.
 
         Args:
-            tz: The timezone to be used.
+            tz: The timezone to be used, as an enum or a corresponding string.
 
         Returns:
             The NoaaRequest object it is called on, for chaining.
