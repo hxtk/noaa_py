@@ -166,6 +166,98 @@ class TestNoaaRequest:
         with pytest.raises(ValueError):
             req.date('foo')
 
+    def test_ready_bad_time(self):
+        req = tides.NoaaRequest() \
+            .station(8720211) \
+            .product(tides.Product.PREDICTIONS) \
+            .interval(tides.Interval.HILO) \
+            .units(tides.Unit.ENGLISH) \
+            .datum(tides.Datum.MEAN_LOWER_LOW_WATER) \
+            .timezone(tides.TimeZone.GMT)
+
+        req.date(tides.NoaaDate.TODAY)
+        req.begin_date(datetime.datetime.now())
+        with pytest.raises(tides.ApiError):
+            req._ready(error=True)
+
+    def test_ready_no_station(self):
+        req = tides.NoaaRequest() \
+            .product(tides.Product.PREDICTIONS) \
+            .interval(tides.Interval.HILO) \
+            .begin_date(datetime.datetime.fromisoformat('2019-05-01')) \
+            .end_date(datetime.datetime.fromisoformat('2019-05-02')) \
+            .units(tides.Unit.ENGLISH) \
+            .datum(tides.Datum.MEAN_LOWER_LOW_WATER) \
+            .timezone(tides.TimeZone.GMT)
+
+        with pytest.raises(tides.ApiError):
+            req._ready(error=True)
+
+    def test_ready_no_product(self):
+        req = tides.NoaaRequest() \
+            .station(8720211) \
+            .interval(tides.Interval.HILO) \
+            .begin_date(datetime.datetime.fromisoformat('2019-05-01')) \
+            .end_date(datetime.datetime.fromisoformat('2019-05-02')) \
+            .units(tides.Unit.ENGLISH) \
+            .datum(tides.Datum.MEAN_LOWER_LOW_WATER) \
+            .timezone(tides.TimeZone.GMT)
+
+        with pytest.raises(tides.ApiError):
+            req._ready(error=True)
+
+    def test_ready_no_interval(self):
+        req = tides.NoaaRequest() \
+            .station(8720211) \
+            .interval(tides.Interval.HILO) \
+            .begin_date(datetime.datetime.fromisoformat('2019-05-01')) \
+            .end_date(datetime.datetime.fromisoformat('2019-05-02')) \
+            .units(tides.Unit.ENGLISH) \
+            .datum(tides.Datum.MEAN_LOWER_LOW_WATER) \
+            .timezone(tides.TimeZone.GMT)
+
+        with pytest.raises(tides.ApiError):
+            req._ready(error=True)
+
+    def test_ready_no_units(self):
+        req = tides.NoaaRequest() \
+            .station(8720211) \
+            .product(tides.Product.PREDICTIONS) \
+            .interval(tides.Interval.HILO) \
+            .begin_date(datetime.datetime.fromisoformat('2019-05-01')) \
+            .end_date(datetime.datetime.fromisoformat('2019-05-02')) \
+            .datum(tides.Datum.MEAN_LOWER_LOW_WATER) \
+            .timezone(tides.TimeZone.GMT)
+
+        with pytest.raises(tides.ApiError):
+            req._ready(error=True)
+
+    def test_ready_no_datum(self):
+        req = tides.NoaaRequest() \
+            .station(8720211) \
+            .product(tides.Product.PREDICTIONS) \
+            .interval(tides.Interval.HILO) \
+            .begin_date(datetime.datetime.fromisoformat('2019-05-01')) \
+            .end_date(datetime.datetime.fromisoformat('2019-05-02')) \
+            .units(tides.Unit.ENGLISH) \
+            .timezone(tides.TimeZone.GMT)
+
+        with pytest.raises(tides.ApiError):
+            req._ready(error=True)
+
+    def test_ready_no_timezone(self):
+        req = tides.NoaaRequest() \
+            .station(8720211) \
+            .product(tides.Product.PREDICTIONS) \
+            .interval(tides.Interval.HILO) \
+            .begin_date(datetime.datetime.fromisoformat('2019-05-01')) \
+            .end_date(datetime.datetime.fromisoformat('2019-05-02')) \
+            .units(tides.Unit.ENGLISH) \
+            .datum(tides.Datum.MEAN_LOWER_LOW_WATER)
+
+        with pytest.raises(tides.ApiError):
+            req._ready(error=True)
+
 
 class TestNoaaTimeRange:
     def test_is_valid_beginAndEnd(self):
