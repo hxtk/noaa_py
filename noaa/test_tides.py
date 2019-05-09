@@ -143,6 +143,25 @@ class TestNoaaRequest:
         assert abs(res[0].value - 1.669) < 0.001
         assert len(res[0].flags) == 4
 
+    def test_str_enum(self):
+        req = tides.NoaaRequest()
+        req.product('predictions')
+        req.datum('MLLW')
+        req.units('english')
+        req.timezone('gmt')
+
+        with pytest.raises(ValueError):
+            req.product('foo')
+
+        with pytest.raises(ValueError):
+            req.datum('foo')
+
+        with pytest.raises(ValueError):
+            req.units('foo')
+
+        with pytest.raises(ValueError):
+            req.timezone('foo')
+
 
 class TestNoaaTimeRange:
     def test_is_valid_beginAndEnd(self):
