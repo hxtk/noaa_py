@@ -453,10 +453,6 @@ class NoaaRequest(object):
             res = False
             if error:
                 raise ApiError('Invalid or absent Timezone.')
-        if self._interval and not isinstance(self._interval, Interval):
-            res = False
-            if error:
-                raise ApiError('Invalid data interval.')
         if not self._station:
             res = False
             if error:

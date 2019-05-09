@@ -209,15 +209,15 @@ class TestNoaaRequest:
     def test_ready_no_interval(self):
         req = tides.NoaaRequest() \
             .station(8720211) \
-            .interval(tides.Interval.HILO) \
+            .product(tides.Product.PREDICTIONS) \
             .begin_date(datetime.datetime.fromisoformat('2019-05-01')) \
             .end_date(datetime.datetime.fromisoformat('2019-05-02')) \
             .units(tides.Unit.ENGLISH) \
             .datum(tides.Datum.MEAN_LOWER_LOW_WATER) \
             .timezone(tides.TimeZone.GMT)
 
-        with pytest.raises(tides.ApiError):
-            req._ready(error=True)
+        # Interval is not a required argument.
+        assert req._ready(error=True)
 
     def test_ready_no_units(self):
         req = tides.NoaaRequest() \
