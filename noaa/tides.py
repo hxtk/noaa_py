@@ -1,8 +1,8 @@
-from typing import Mapping, Optional
+from typing import Mapping, Optional, List
 
-import collections
 import datetime
 import enum
+import typing
 
 import requests
 
@@ -115,7 +115,12 @@ class NoaaDate(enum.Enum):
     RECENT = 'recent'
 
 
-DataRow = collections.namedtuple('DataRow', 'time value stdev flags quality')
+class DataRow(typing.NamedTuple):
+    time: datetime.datetime
+    value: float
+    stdev: float
+    flags: List[bool]
+    quality: str
 
 
 class DataResult:
@@ -145,7 +150,10 @@ class DataResult:
         return len(self.rows)
 
 
-PredictionsRow = collections.namedtuple('PredictionsRow', 'time value type')
+class PredictionsRow(typing.NamedTuple):
+    time: datetime.datetime
+    value: float
+    type: str
 
 
 class PredictionsResult:
