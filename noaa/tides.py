@@ -1,4 +1,4 @@
-from typing import Mapping, Optional, List
+from typing import Mapping, Optional, List, Union
 
 import datetime
 import enum
@@ -128,7 +128,7 @@ class DataResult:
     _DATE_FORMAT = '%Y-%m-%d %H:%M'
 
     def __init__(self, data):
-        self.rows = []
+        self._rows = []
         for row in data:
             time = datetime.datetime.strptime(
                 row['t'],
@@ -137,17 +137,17 @@ class DataResult:
             stdev = float(row['s'])
             flags = [int(x) == 1 for x in row['f'].split(',')]
             quality = row['q']
-            self.rows.append(DataRow(time, value, stdev, flags, quality))
+            self._rows.append(DataRow(time, value, stdev, flags, quality))
 
     def __iter__(self):
-        for row in self.rows:
+        for row in self._rows:
             yield row
 
     def __getitem__(self, item: int) -> DataRow:
-        return self.rows[item]
+        return self._rows[item]
 
     def __len__(self):
-        return len(self.rows)
+        return len(self._rows)
 
 
 class PredictionsRow(typing.NamedTuple):
@@ -161,24 +161,24 @@ class PredictionsResult:
     _DATE_FORMAT = '%Y-%m-%d %H:%M'
 
     def __init__(self, data):
-        self.rows = []
+        self._rows = []
         for row in data:
             time = datetime.datetime.strptime(
                 row['t'],
                 PredictionsResult._DATE_FORMAT)
             value = float(row['v'])
             row_type = row['type'] if 'type' in row else None
-            self.rows.append(PredictionsRow(time, value, row_type))
+            self._rows.append(PredictionsRow(time, value, row_type))
 
     def __iter__(self):
-        for row in self.rows:
+        for row in self._rows:
             yield row
 
     def __getitem__(self, item: int) -> PredictionsRow:
-        return self.rows[item]
+        return self._rows[item]
 
     def __len__(self):
-        return len(self.rows)
+        return len(self._rows)
 
 
 class NoaaRequest(object):
@@ -187,15 +187,15 @@ class NoaaRequest(object):
                  '&application=noaa_py&format=json&{}'
 
     def __init__(self):
-        self.time_range = NoaaTimeRange()
-        self.noaa_product: Product = None
-        self.noaa_datum: Datum = None
-        self.unit_system: Unit = None
-        self.station_id: int = None
-        self.interval_: Optional[Interval] = None
-        self.timezone_: TimeZone = None
+        self._time_range = NoaaTimeRange()
+        self._product: Product = None
+        self._datum: Datum = None
+        self._units: Unit = None
+        self._station: int = None
+        self._interval: Optional[Interval] = None
+        self._timezone: TimeZone = None
 
-    def execute(self) -> 'NoaaResult':
+    def execute(self) -> Union['PredictionsResult', 'DataResult']:
         """Executes the built request.
 
         Returns:
@@ -212,7 +212,7 @@ class NoaaRequest(object):
         if 'error' in data:
             raise ApiError(data['error']['message'])
 
-        if self.noaa_product == Product.PREDICTIONS:
+        if self._product == Product.PREDICTIONS:
             return PredictionsResult(data['predictions'])
         return DataResult(data['data'])
 
@@ -230,7 +230,7 @@ class NoaaRequest(object):
             The NoaaRequest object it was called on, for chaining.
 
         """
-        self.time_range.begin = begin
+        self._time_range.begin = begin
         return self
 
     def end_date(self, end: datetime.datetime) -> 'NoaaRequest':
@@ -247,7 +247,7 @@ class NoaaRequest(object):
             The NoaaRequest object it was called on, for chaining.
 
         """
-        self.time_range.end = end
+        self._time_range.end = end
         return self
 
     def range(self, hours: int) -> 'NoaaRequest':
@@ -267,7 +267,7 @@ class NoaaRequest(object):
             The NoaaRequest object it is called on, for chaining.
 
         """
-        self.time_range.hours = hours
+        self._time_range.hours = hours
         return self
 
     def date(self, date: NoaaDate) -> 'NoaaRequest':
@@ -287,7 +287,7 @@ class NoaaRequest(object):
 
         See Also: NoaaDate
         """
-        self.time_range.date = date
+        self._time_range.date = date
         return self
 
     def product(self, product: Product) -> 'NoaaRequest':
@@ -301,7 +301,7 @@ class NoaaRequest(object):
 
         See Also: NoaaProduct
         """
-        self.noaa_product = product
+        self._product = product
         return self
 
     def datum(self, datum: Datum) -> 'NoaaRequest':
@@ -316,7 +316,7 @@ class NoaaRequest(object):
         Returns:
             The NoaaRequest object it is called on, for chaining.
         """
-        self.noaa_datum = datum
+        self._datum = datum
         return self
 
     def units(self, units: Unit) -> 'NoaaRequest':
@@ -334,7 +334,7 @@ class NoaaRequest(object):
         See Also:
             tides.Unit
         """
-        self.unit_system = units
+        self._units = units
         return self
 
     def station(self, station_id: int) -> 'NoaaRequest':
@@ -346,7 +346,7 @@ class NoaaRequest(object):
         Returns:
             The NoaaRequest object it is called on, for chaining.
         """
-        self.station_id = station_id
+        self._station = station_id
         return self
 
     def interval(self, interval: Interval) -> 'NoaaRequest':
@@ -363,7 +363,7 @@ class NoaaRequest(object):
         Returns:
             The NoaaRequest object it is called on, for chaining.
         """
-        self.interval_ = interval
+        self._interval = interval
         return self
 
     def timezone(self, tz: TimeZone) -> 'NoaaRequest':
@@ -380,20 +380,20 @@ class NoaaRequest(object):
         Returns:
             The NoaaRequest object it is called on, for chaining.
         """
-        self.timezone_ = tz
+        self._timezone = tz
         return self
 
     def __str__(self) -> str:
         """Return the URL associated with this request."""
-        interval = self.interval_.value if self.interval_ else ''
+        interval = self._interval.value if self._interval else ''
         args = '&'.join([
-            str(self.time_range),
-            'product=' + self.noaa_product.value,
-            'datum=' + self.noaa_datum.value,
-            'units=' + self.unit_system.value,
-            'time_zone=' + self.timezone_.value,
+            str(self._time_range),
+            'product=' + self._product.value,
+            'datum=' + self._datum.value,
+            'units=' + self._units.value,
+            'time_zone=' + self._timezone.value,
             'interval=' + interval,
-            'station=' + str(self.station_id),
+            'station=' + str(self._station),
         ])
         return NoaaRequest.URL_FORMAT.format(args)
 
@@ -415,27 +415,27 @@ class NoaaRequest(object):
             If `error` is True, may raise MalformedRequestException.
         """
         res = True
-        if not self.time_range.is_valid():
+        if not self._time_range.is_valid():
             res = False
             if error:
                 raise ApiError('Invalid time range specification.')
-        if not isinstance(self.noaa_product, Product):
+        if not isinstance(self._product, Product):
             res = False
             if error:
                 raise ApiError('Invalid or absent NOAA Product.')
-        if not isinstance(self.noaa_datum, Datum):
+        if not isinstance(self._datum, Datum):
             res = False
             if error:
                 raise ApiError('Invalid or absent NOAA Datum.')
-        if not isinstance(self.unit_system, Unit):
+        if not isinstance(self._units, Unit):
             res = False
             if error:
                 raise ApiError('Invalid or absent Unit specification.')
-        if not isinstance(self.timezone_, TimeZone):
+        if not isinstance(self._timezone, TimeZone):
             res = False
             if error:
                 raise ApiError('Invalid or absent Timezone.')
-        if self.interval_ and not isinstance(self.interval_, Interval):
+        if self._interval and not isinstance(self._interval, Interval):
             res = False
             if error:
                 raise ApiError('Invalid data interval.')
