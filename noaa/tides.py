@@ -270,7 +270,7 @@ class NoaaRequest(object):
         self._time_range.hours = hours
         return self
 
-    def date(self, date: NoaaDate) -> 'NoaaRequest':
+    def date(self, date: Union[NoaaDate, str]) -> 'NoaaRequest':
         """Set the named time range for the result.
 
         NOAA specifies three named time ranges, which are documented in
@@ -287,10 +287,13 @@ class NoaaRequest(object):
 
         See Also: NoaaDate
         """
-        self._time_range.date = date
+        if isinstance(date, NoaaDate):
+            self._time_range.date = date
+        else:
+            self._time_range.date = NoaaDate(date)
         return self
 
-    def product(self, product: Product) -> 'NoaaRequest':
+    def product(self, product: Union[Product, str]) -> 'NoaaRequest':
         """Sets the NOAA product to be queried.
 
         Args:
@@ -301,10 +304,13 @@ class NoaaRequest(object):
 
         See Also: NoaaProduct
         """
-        self._product = product
+        if isinstance(product, Product):
+            self._product = product
+        else:
+            self._product = Product(product)
         return self
 
-    def datum(self, datum: Datum) -> 'NoaaRequest':
+    def datum(self, datum: Union[Datum, str]) -> 'NoaaRequest':
         """Specify NOAA Datum.
 
         This is a required argument required if the specified product is a
@@ -316,10 +322,13 @@ class NoaaRequest(object):
         Returns:
             The NoaaRequest object it is called on, for chaining.
         """
-        self._datum = datum
+        if isinstance(datum, Datum):
+            self._datum = datum
+        else:
+            self._datum = Datum(datum)
         return self
 
-    def units(self, units: Unit) -> 'NoaaRequest':
+    def units(self, units: Union[Unit, str]) -> 'NoaaRequest':
         """Specify the unit system to be used.
 
         One must use a `tides.Unit` to specify one of the two available unit
@@ -334,7 +343,10 @@ class NoaaRequest(object):
         See Also:
             tides.Unit
         """
-        self._units = units
+        if isinstance(units, Unit):
+            self._units = units
+        else:
+            self._units = Unit(units)
         return self
 
     def station(self, station_id: int) -> 'NoaaRequest':
@@ -349,7 +361,7 @@ class NoaaRequest(object):
         self._station = station_id
         return self
 
-    def interval(self, interval: Interval) -> 'NoaaRequest':
+    def interval(self, interval: Union[Interval, str]) -> 'NoaaRequest':
         """Specify the time interval to be used.
 
         Time interval is an optional parameter. If it is not specified,
@@ -363,10 +375,13 @@ class NoaaRequest(object):
         Returns:
             The NoaaRequest object it is called on, for chaining.
         """
-        self._interval = interval
+        if isinstance(interval, Interval):
+            self._interval = interval
+        else:
+            self._interval = Interval(interval)
         return self
 
-    def timezone(self, tz: TimeZone) -> 'NoaaRequest':
+    def timezone(self, tz: Union[TimeZone, str]) -> 'NoaaRequest':
         """Specify the timezone to be used.
 
         The timezone may be TimeZone.GMT, specifying the GMT timezone,
@@ -380,7 +395,10 @@ class NoaaRequest(object):
         Returns:
             The NoaaRequest object it is called on, for chaining.
         """
-        self._timezone = tz
+        if isinstance(tz, TimeZone):
+            self._timezone = tz
+        else:
+            self._timezone = TimeZone(tz)
         return self
 
     def __str__(self) -> str:
