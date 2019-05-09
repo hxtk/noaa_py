@@ -12,13 +12,17 @@ This is intended to be a Python library for using the NOAA APIs. The milestone c
 
 ```python
 setup(
-	...
-	dependency_links=['http://github.com/hxtk/noaa_py/tarball/master#egg=noaa_py-0.0.1.dev']
-	...
+    ...
+    install_requires=[
+	    ...
+		"noaa_py @ git+https://github.com/hxtk/noaa_py.git@master",
+		...
+	]
+    ...
 )
 ```
 
 ### In your `requirements.txt` file
 
-`git+https://github.com/hxtk/noaa_py.git#egg=noaa_py-0.0.1.dev`
+`noaa_py @ git+https://github.com/hxtk/noaa_py.git@master`
 
