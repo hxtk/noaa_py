@@ -1,3 +1,4 @@
+"""The tides module defines exposes an API for the NOAA Tides and Currents API."""
 from typing import Mapping, Optional, List, Union
 
 import datetime
@@ -389,7 +390,7 @@ class NoaaRequest(object):
             self._interval = Interval(interval)
         return self
 
-    def timezone(self, tz: Union[TimeZone, str]) -> 'NoaaRequest':
+    def timezone(self, timezone: Union[TimeZone, str]) -> 'NoaaRequest':
         """Specify the timezone to be used.
 
         The timezone may be TimeZone.GMT, specifying the GMT timezone,
@@ -398,15 +399,15 @@ class NoaaRequest(object):
         standard time of the station being queried and accounting for DST.
 
         Args:
-            tz: The timezone to be used, as an enum or a corresponding string.
+            timezone: The timezone to be used, as an enum or a corresponding string.
 
         Returns:
             The NoaaRequest object it is called on, for chaining.
         """
-        if isinstance(tz, TimeZone):
-            self._timezone = tz
+        if isinstance(timezone, TimeZone):
+            self._timezone = timezone
         else:
-            self._timezone = TimeZone(tz)
+            self._timezone = TimeZone(timezone)
         return self
 
     def __str__(self) -> str:
