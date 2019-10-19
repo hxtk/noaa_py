@@ -184,7 +184,7 @@ class PredictionsResult:
         return len(self._rows)
 
 
-class NoaaRequest(object):
+class NoaaRequest:
     """Builder for a request against the NOAA Tides and Currents API."""
     URL_FORMAT = 'https://tidesandcurrents.noaa.gov/api/datagetter?' \
                  '&application=noaa_py&format=json&{}'
